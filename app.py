@@ -15,5 +15,9 @@ def researchCountries():
 def graphicsCountries():
     return render_template('graphics/graphics.html')
 
+@app.route('/highway')
+def highwayConcessionaire():
+    return render_template('highway/highway.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
