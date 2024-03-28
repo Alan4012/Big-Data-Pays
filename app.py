@@ -9,7 +9,7 @@ def dashboard():
 
 @app.route('/recherche-de-pays')
 def researchCountries():
-    return render_template('researchCountries/researchCountries.html')
+    return render_template('researchHighway/researchHighway.html')
 
 @app.route('/graphique')
 def graphicsCountries():
