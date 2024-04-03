@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Graphique</title>
+    <title>Recherche de pays</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -10,13 +10,72 @@
     <div class="container">
         <nav class="column">
             <a class="button" href="/">Accueil</a>
-            <a class="button" href="/recherche-de-pays">Recherche de pays</a>
-            <a class="button" href="/graphique">Graphique 1</a>
+            <a class="button" href="/researchHighway">Recherche Autoroutes</a>
+            <a class="button" href="/nombre-autoroute-par-gestionnaire">Nombres d'autoroutes par gestionnaires</a>
             <a class="button" href="#Graphique 2">Graphique 2</a>
         </nav>
     </div>
     <div>
-        <h1>Graphique</h1>
+        <h2>Nombres d'autoroutes par gestionnaires</h2>
     </div>
+        <label for="annees">Sélectionnez une année :</label>
+        <select id="annees" name="annees">
+            {% for annee in annees %}
+                <option value="{{ annee }}">{{ annee }}</option>
+            {% endfor %}
+        </select>
+        <div id="data-container" style="width: 50%; overflow-x: auto;"></div>
 </body>
 </html>
+<script>
+    var ctx;
+    var chart;
+
+    document.getElementById('annees').addEventListener('change', function () {
+        var selectedYear = this.value;
+
+        fetch('/api/routeGestionnaire?years=' + selectedYear)
+            .then(response => response.json())
+            .then(data => {
+                const routes = data.map(entry => entry["count"]);
+                const gestionnaires = data.map(entry => entry["_id"]);
+
+                if (chart) {
+                        chart.data.labels = gestionnaires;
+                        chart.data.datasets[0].data = routes;
+                        chart.update();
+                    } else {
+                        var dataContainer = document.getElementById('data-container');
+                        ctx = document.createElement('canvas').getContext('2d');
+                        dataContainer.innerHTML = '';
+                        dataContainer.appendChild(ctx.canvas);
+
+
+                        chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: gestionnaires,
+                                datasets: [{
+                                    label: 'Nombre de routes par gestionnaires',
+                                    data: routes,
+                                    borderColor: 'red',
+                                    borderWidth: 1,
+                                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                                    fill: true,
+
+                                }],
+                            },
+                            options: {
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: "Nombre de routes par gesitonnaires"
+                                    }
+                                }
+                            }
+                        })
+                    }
+                })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
