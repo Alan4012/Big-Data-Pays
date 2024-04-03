@@ -13,7 +13,7 @@ collection = db["routes"]
 def dashboard():
     return render_template('index.html')
 
-@app.route('/nombre-autoroute-par-gestionnaire')
+@app.route('/nombre-routes-par-gestionnaire')
 def graphicsConcession():
     data_dates = collection.distinct("dateReferentiel")
     seen_year = set()
@@ -30,12 +30,12 @@ def graphicsConcession():
 
     return render_template('graphics/graphics.html', annees=years)
 
-@app.route('/api/routeGestionnaire', methods=['GET'])
-def autorouteConcession():
+@app.route('/api/routeGestionnaireConcedee', methods=['GET'])
+def autorouteGestionnaireConcedee():
     selected_year = request.args.get('years', type=str)
 
     if selected_year is None:
-        return jsonify({'error': 'year pas inclut dans /api/autorouteGestionnaire'}), 400
+        return jsonify({'error': 'year pas inclut dans /api/routeGestionnaireConcedee'}), 400
 
     print(selected_year)
 
@@ -44,12 +44,55 @@ def autorouteConcession():
     pipeline = [
         {
             '$match': {
-                'dateReferentiel': {'$regex': regex_date}
+                'dateReferentiel': {'$regex': regex_date},
+                'concessionPrD': {'$regex': '^C'}
             }
-        },{
+        },
+        {
             '$group': {
               '_id': "$Gestionnaire",
-              'count': { '$sum': { '$cond': [["$route", 'null'] , 1, 0] }}
+                'count': { '$sum': { '$cond': [["$route", 'null'] , 1, 0] }},
+            }
+        },
+        {
+            '$match': {
+                'count': {'$gte': 5}
+            }
+        }
+    ]
+
+    with collection.aggregate(pipeline) as cursor:
+        data = list(cursor)
+
+    return jsonify(data), 200
+
+@app.route('/api/routeGestionnaireNonConcedee', methods=['GET'])
+def autorouteGestionnaireNonConcedee():
+    selected_year = request.args.get('years', type=str)
+
+    if selected_year is None:
+        return jsonify({'error': 'year pas inclut dans /api/routeGestionnaireNonConcedee'}), 400
+
+    print(selected_year)
+
+    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+
+    pipeline = [
+        {
+            '$match': {
+                'dateReferentiel': {'$regex': regex_date},
+                'concessionPrD': {'$regex': '^N'}
+            }
+        },
+        {
+            '$group': {
+              '_id': "$Gestionnaire",
+                'count': { '$sum': { '$cond': [["$route", 'null'] , 1, 0] }},
+            }
+        },
+        {
+            '$match': {
+                'count': {'$gte': 5}
             }
         }
     ]
