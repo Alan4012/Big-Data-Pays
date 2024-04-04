@@ -3,20 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <title>Accueil</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/milligram.min.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Georgia, serif;
+            background-image: url('https://media.istockphoto.com/id/513106144/fr/photo/trafic-sur-lautoroute-de-voitures.jpg?s=612x612&w=0&k=20&c=K6BLD4WLSPsXDJqM5kIQOx4pQJOAjzQLwEo1rJsOCio=');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-around; /* Répartit les boutons sur toute la largeur */
+            margin-bottom: 20px;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 999;
+        }
+        .button {
+            margin: 10px;
+            padding: 15px 30px;
+            background-color: rgb(234, 105, 105, 0.8);
+            color: rgba(3, 2, 2, 1.5);
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 25px;
+            cursor: pointer;
+        }
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <nav class="column">
-            <a class="button" href="/">Accueil</a>
-            <a class="button" href="/recherche-de-pays">Recherche de pays</a>
-            <a class="button" href="/graphique">Graphique 1</a>
-            <a class="button" href="#Graphique 2">Graphique 2</a>
-        </nav>
-    </div>
-    <div>
+    <div class="overlay">
         <h1>Accueil</h1>
+    </div>
+    <div class="button-container">
+        <a class="button" href="/RA">Recherche de route</a>
+        <a class="button" href="/graphique">Graphique 1</a>
+        <a class="button" href="#Graphique2">Graphique 2</a>
     </div>
 </body>
 </html>
