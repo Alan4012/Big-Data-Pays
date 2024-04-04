@@ -31,14 +31,10 @@
     <div>
         <h2>Longueurs des routes par gestionnaires</h2>
     </div>
-        <label for="concessions">Choisissez : concédée ou non concédée</label>
-        <select id="concessions" name="concessions">
-            {% for concession in concessions %}
-                <option value="{{ concession }}">{{ concession }}</option>
-            {% endfor %}
-        </select>
-        <div class="column" id="data-container-longueur" style="width: 40%;"></div>
-
+    <div class="row">
+        <div class="column" id="data-container-concede-longueur" style="width: 40%;"></div>
+        <div class="column" id="data-container-non-concede-longueur" style="width: 40%;"></div>
+    </div>
 </body>
 </html>
 <script>
@@ -70,7 +66,7 @@
                         data: {
                             labels: gestionnaires,
                             datasets: [{
-                                label: 'Nombre de routes ',
+                                label: ' Nombre de routes ',
                                 data: routes,
                                 borderWidth: 1,
                                 backgroundColor: 'rgb(26,153,252)',
@@ -82,7 +78,10 @@
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: "Nombre de routes par gestionnaires concédée par l'état"
+                                    text: "Nombre de routes par gestionnaires concédée par l'état",
+                                    font: {
+                                        size: 18
+                                    }
                                 }
                             }
                         }
@@ -115,19 +114,123 @@
                         data: {
                             labels: gestionnaires,
                             datasets: [{
-                                label: 'Nombre de routes ',
+                                label: ' Nombre de routes',
                                 data: routes,
                                 borderWidth: 1,
                                 backgroundColor: 'rgb(124,0,194)',
                                 fill: true,
-
                             }],
                         },
                         options: {
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: "Nombre de routes par gestionnaires non concédée par l'état"
+                                    text: "Nombre de routes par gestionnaires non concédée par l'état",
+                                    font: {
+                                        size: 18
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
+            })
+
+        fetch('/api/LongueurRouteGestionnaireConcedee?years=' + selectedYear)
+            .then(response => response.json())
+            .then(data => {
+                const concession = data.map(entry => entry["_id"])
+                const longueurR = data.map(entry => entry["longueur_formate"])
+
+                var chart3;
+                var ctx3;
+
+                if (chart3) {
+                    chart3.data.labels = concession;
+                    chart3.data.datasets[0].data = longueurR;
+                    chart3.update();
+                } else {
+                    var dataContainer = document.getElementById('data-container-concede-longueur');
+                    ctx3 = document.createElement('canvas').getContext('2d');
+                    dataContainer.innerHTML = '';
+                    dataContainer.appendChild(ctx3.canvas);
+
+                    const backgroundColors = generateColors(concession.length)
+
+                    chart3 = new Chart(ctx3, {
+                        type: 'doughnut',
+                        data: {
+                            labels: concession,
+                            datasets: [{
+                                label: ' Longueur des routes (en km)',
+                                data: longueurR,
+                                backgroundColor: backgroundColors,
+                            }],
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: "Longueur des routes par gestionnaires concédée par l'état",
+                                    font: {
+                                        size: 18
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
+            })
+
+        function generateColors(numColors) {
+            const colors = [];
+            for (let i = 0; i < numColors; i++) {
+                const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
+                colors.push(color);
+            }
+            return colors;
+        }
+
+        fetch('/api/LongueurRouteGestionnaireNonConcedee?years=' + selectedYear)
+            .then(response => response.json())
+            .then(data => {
+                const concession = data.map(entry => entry["_id"])
+                const longueurR = data.map(entry => entry["longueur_formate"])
+
+                var chart4;
+                var ctx4;
+
+                if (chart4) {
+                    chart4.data.labels = concession;
+                    chart4.data.datasets[0].data = longueurR;
+                    chart4.update();
+                } else {
+                    var dataContainer = document.getElementById('data-container-non-concede-longueur');
+                    ctx4 = document.createElement('canvas').getContext('2d');
+                    dataContainer.innerHTML = '';
+                    dataContainer.appendChild(ctx4.canvas);
+
+                    const backgroundColors2 = generateColors2(concession.length)
+
+                    chart4 = new Chart(ctx4, {
+                        type: 'doughnut',
+                        data: {
+                            labels: concession,
+                            datasets: [{
+                                label: ' Longueur des routes (en km)',
+                                data: longueurR,
+                                backgroundColor: backgroundColors2,
+                                fill: true,
+                            }],
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: "Longueur des routes par gestionnaires non concédée par l'état",
+                                    font: {
+                                        size: 18
+                                    }
                                 }
                             }
                         }
@@ -135,5 +238,14 @@
                 }
             })
             .catch(error => console.error('Error:', error));
+
+            function generateColors2(numColors) {
+                const colors = [];
+                for (let i = 0; i < numColors; i++) {
+                    const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
+                    colors.push(color);
+                }
+                return colors;
+            }
     });
 </script>

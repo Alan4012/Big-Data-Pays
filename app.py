@@ -51,7 +51,7 @@ def autorouteGestionnaireConcedee():
         {
             '$group': {
               '_id': "$Gestionnaire",
-                'count': { '$sum': { '$cond': [["$route", 'null'] , 1, 0] }},
+                'count': {'$sum': {'$cond': [["$route", 'null'], 1, 0]}},
             }
         },
         {
@@ -87,7 +87,7 @@ def autorouteGestionnaireNonConcedee():
         {
             '$group': {
               '_id': "$Gestionnaire",
-                'count': { '$sum': { '$cond': [["$route", 'null'] , 1, 0] }},
+                'count': {'$sum': {'$cond': [["$route", 'null'], 1, 0]}},
             }
         },
         {
