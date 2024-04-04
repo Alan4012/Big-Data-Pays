@@ -25,9 +25,20 @@
             {% endfor %}
         </select>
     <div class="row">
-        <div class="column" id="data-container-concedee" style="width: 45%; overflow-x: auto;"></div>
-        <div class="column" id="data-container-non-concedee" style="width: 45%; overflow-x: auto;"></div>
+        <div class="column" id="data-container-concedee" style="width: 40%;"></div>
+        <div class="column" id="data-container-non-concedee" style="width: 40%;"></div>
     </div>
+    <div>
+        <h2>Longueurs des routes par gestionnaires</h2>
+    </div>
+        <label for="concessions">Choisissez : concédée ou non concédée</label>
+        <select id="concessions" name="concessions">
+            {% for concession in concessions %}
+                <option value="{{ concession }}">{{ concession }}</option>
+            {% endfor %}
+        </select>
+        <div class="column" id="data-container-longueur" style="width: 40%;"></div>
+
 </body>
 </html>
 <script>
@@ -44,40 +55,40 @@
                 var chart;
 
                 if (chart) {
-                        chart.data.labels = gestionnaires;
-                        chart.data.datasets[0].data = routes;
-                        chart.update();
-                    } else {
-                        var dataContainer = document.getElementById('data-container-concedee');
-                        ctx = document.createElement('canvas').getContext('2d');
-                        dataContainer.innerHTML = '';
-                        dataContainer.appendChild(ctx.canvas);
+                    chart.data.labels = gestionnaires;
+                    chart.data.datasets[0].data = routes;
+                    chart.update();
+                } else {
+                    var dataContainer = document.getElementById('data-container-concedee');
+                    ctx = document.createElement('canvas').getContext('2d');
+                    dataContainer.innerHTML = '';
+                    dataContainer.appendChild(ctx.canvas);
 
 
-                        chart = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: gestionnaires,
-                                datasets: [{
-                                    label: 'Nombre de routes ',
-                                    data: routes,
-                                    borderWidth: 1,
-                                    backgroundColor: 'rgb(26,153,252)',
-                                    fill: true,
+                    chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: gestionnaires,
+                            datasets: [{
+                                label: 'Nombre de routes ',
+                                data: routes,
+                                borderWidth: 1,
+                                backgroundColor: 'rgb(26,153,252)',
+                                fill: true,
 
-                                }],
-                            },
-                            options: {
-                                plugins: {
-                                    title: {
-                                        display: true,
-                                        text: "Nombre de routes par gesitonnaires concédée par l'état"
-                                    }
+                            }],
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: "Nombre de routes par gestionnaires concédée par l'état"
                                 }
                             }
-                        })
-                    }
-                })
+                        }
+                    })
+                }
+            })
 
         fetch('/api/routeGestionnaireNonConcedee?years=' + selectedYear)
             .then(response => response.json())
@@ -89,40 +100,40 @@
                 var chart2;
 
                 if (chart2) {
-                        chart.data.labels = gestionnaires;
-                        chart.data.datasets[0].data = routes;
-                        chart.update();
-                    } else {
-                        var dataContainer = document.getElementById('data-container-non-concedee');
-                        ctx2 = document.createElement('canvas').getContext('2d');
-                        dataContainer.innerHTML = '';
-                        dataContainer.appendChild(ctx2.canvas);
+                    chart2.data.labels = gestionnaires;
+                    chart2.data.datasets[0].data = routes;
+                    chart2.update();
+                } else {
+                    var dataContainer = document.getElementById('data-container-non-concedee');
+                    ctx2 = document.createElement('canvas').getContext('2d');
+                    dataContainer.innerHTML = '';
+                    dataContainer.appendChild(ctx2.canvas);
 
 
-                        chart2 = new Chart(ctx2, {
-                            type: 'bar',
-                            data: {
-                                labels: gestionnaires,
-                                datasets: [{
-                                    label: 'Nombre de routes ',
-                                    data: routes,
-                                    borderWidth: 1,
-                                    backgroundColor: 'rgb(124,0,194)',
-                                    fill: true,
+                    chart2 = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: gestionnaires,
+                            datasets: [{
+                                label: 'Nombre de routes ',
+                                data: routes,
+                                borderWidth: 1,
+                                backgroundColor: 'rgb(124,0,194)',
+                                fill: true,
 
-                                }],
-                            },
-                            options: {
-                                plugins: {
-                                    title: {
-                                        display: true,
-                                        text: "Nombre de routes par gesitonnaires non concédée par l'état"
-                                    }
+                            }],
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: "Nombre de routes par gestionnaires non concédée par l'état"
                                 }
                             }
-                        })
-                    }
-                })
-        .catch(error => console.error('Error:', error));
+                        }
+                    })
+                }
+            })
+            .catch(error => console.error('Error:', error));
     });
 </script>
