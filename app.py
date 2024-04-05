@@ -140,6 +140,15 @@ def autorouteLongueurGestionnaireConcedee():
                     ]
                 }
             }
+        },
+        {
+            '$addFields': {
+                'longueur_formate': {
+                    '$concat': [
+                        {'$substr': ['$longueur_formate', 0, {'$indexOfBytes': ['$longueur_formate', '.']}]}
+                    ]
+                }
+            }
         }
     ]
 
@@ -183,6 +192,15 @@ def autorouteLongueurGestionnaireNonConcedee():
                                 {'$concat': ['0.', {'$substr': [{'$toString': '$longueur'}, 0, -3]}]}  # Ajout du "0" avant la virgule si nécessaire
                             ]
                         },
+                    ]
+                }
+            }
+        },
+        {
+            '$addFields': {
+                'longueur_formate': {
+                    '$concat': [
+                        {'$substr': ['$longueur_formate', 0, {'$indexOfBytes': ['$longueur_formate', '.']}]}
                     ]
                 }
             }
