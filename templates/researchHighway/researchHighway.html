@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Recherche d'une autoroute</title>
+
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+    <style>
+        #map { height:  100vh; } /* hauteur carte */
+        #map-container { position: relative}
+        #controls { position: absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 1000 }
+        select, h1 {font-family: Georgia, serif;}
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h1>Recherche d'une autoroute</h1>
+        <!-- Liste déroulante des années -->
+        <label for="annees">Sélectionnez une année :</label>
+        <select id="annees" name="annees">
+            {% for annee in annees %}
+                <option value="{{ annee }}">{{ annee }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Liste déroulante des gestionnaires -->
+        <label for="gestionnaires">Selectionnez un gestionnaire :</label>
+        <select id="gestionnaires" name="gestionnaires">
+            {% for gestionnaire in gestionnaires %}
+                <option value="{{ gestionnaire }}">{{ gestionnaire }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <script>
+        var map = L.map('map', {center : [48.8566, 2.3522], zoom : 5}); // Coordonnées de Paris
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: ['a','b','c']
+        }).addTo(map);
+
+        document.getElementById('annees').addEventListener('change', loadData);
+        document.getElementById('gestionnaires').addEventListener('change', loadData);
+
+        function loadData() {
+            // Récupérer les valeurs sélectionnées
+            var selectedAnnee = document.getElementById('annees').value;
+            var selectedGestionnaire = document.getElementById('gestionnaires').value;
+
+            // Effacer toutes les couches précédentes
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            // Envoi d'une requête AJAX pour récupérer les données pour l'année et le gestionnaire sélectionnés
+            fetch('/dataRA?year=' + selectedAnnee + '&gestionnaire=' + selectedGestionnaire)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur de réponse du serveur');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const latD = data.map(entry => entry['latD']);
+                    const lonD = data.map(entry => entry['lonD']);
+                    const latF = data.map(entry => entry['latF']);
+                    const lonF = data.map(entry => entry['lonF']);
+
+                    for(let i = 0 ; i < data.length ; i++){
+                        if (!isNaN(latD[i]) && !isNaN(lonD[i]) && !isNaN(latF[i]) && !isNaN(lonF[i])){
+
+                            // Ajout route
+                            var routeLine = [
+                                new L.LatLng(latD[i], lonD[i]),
+                                new L.LatLng(latF[i], lonF[i])
+                            ];
+
+                            var controle = L.Routing.control({
+                                waypoints: routeLine,
+                                lineOptions: { styles: [{ color: "#5202FF", opacity: 2, weight: 3 }] },
+                                createMarker: function(i, waypoint, nb) {
+                                    if (i == 0) {
+                                        // This is the first marker, indicating start
+                                        myPopup= 'Début autoroute';
+                                    } else if (i == nb-1) {
+                                        //This is the last marker indicating destination
+                                        myPopup='Fin d autoroute';
+                                    }
+                                    var marker = L.marker (waypoint.latLng, {
+                                            draggable: false
+                                            }).bindPopup(myPopup);
+                                    return marker
+                                }
+                            }).addTo(map);
+
+                            controle._container.style.display = "None";
+
+                        }
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la requête AJAX :', error);
+                });
+        }
+
+        // Charger les données initiales
+        loadData();
+    </script>
+</body>
+</html>
