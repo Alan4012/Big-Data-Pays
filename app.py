@@ -104,9 +104,204 @@ def researchHighway():
     return jsonify(data), 200
 
 
-@app.route('/graphique')
-def graphicsCountries():
-    return render_template('graphics/graphics.html')
+@app.route('/nombre-routes-par-gestionnaire')
+def graphicsConcession():
+    data_dates = collection.distinct("dateReferentiel")
+    seen_year = set()
+    years = []
+
+    for entry in data_dates:
+        match = re.search(r'\b(\d{4})\b', entry)
+        if match :
+            year = match.group(1)
+
+            if year not in seen_year:
+                years.append(year)
+                seen_year.add(year)
+
+    return render_template('graphics/graphics.html', annees=years)
+
+@app.route('/api/routeGestionnaireConcedee', methods=['GET'])
+def autorouteGestionnaireConcedee():
+    selected_year = request.args.get('years', type=str)
+
+    if selected_year is None:
+        return jsonify({'error': 'year pas inclut dans /api/routeGestionnaireConcedee'}), 400
+
+    print(selected_year)
+
+    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+
+    pipeline = [
+        {
+            '$match': {
+                'dateReferentiel': {'$regex': regex_date},
+                'concessionPrD': {'$regex': '^C'}
+            }
+        },
+        {
+            '$group': {
+              '_id': "$Gestionnaire",
+                'count': {'$sum': {'$cond': [["$route", 'null'], 1, 0]}},
+            }
+        },
+        {
+            '$match': {
+                'count': {'$gte': 5}
+            }
+        }
+    ]
+
+    with collection.aggregate(pipeline) as cursor:
+        data = list(cursor)
+
+    return jsonify(data), 200
+
+@app.route('/api/routeGestionnaireNonConcedee', methods=['GET'])
+def autorouteGestionnaireNonConcedee():
+    selected_year = request.args.get('years', type=str)
+
+    if selected_year is None:
+        return jsonify({'error': 'year pas inclut dans /api/routeGestionnaireNonConcedee'}), 400
+
+    print(selected_year)
+
+    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+
+    pipeline = [
+        {
+            '$match': {
+                'dateReferentiel': {'$regex': regex_date},
+                'concessionPrD': {'$regex': '^N'}
+            }
+        },
+        {
+            '$group': {
+              '_id': "$Gestionnaire",
+                'count': {'$sum': {'$cond': [["$route", 'null'], 1, 0]}},
+            }
+        },
+        {
+            '$match': {
+                'count': {'$gte': 5}
+            }
+        }
+    ]
+
+    with collection.aggregate(pipeline) as cursor:
+        data = list(cursor)
+
+    return jsonify(data), 200
+
+@app.route('/api/LongueurRouteGestionnaireConcedee', methods=['GET'])
+def autorouteLongueurGestionnaireConcedee():
+    selected_year = request.args.get('years', type=str)
+
+    if selected_year is None:
+        return jsonify({'error': 'year pas inclut dans /api/LongueurRouteGestionnaireConcedee'}), 400
+
+    print(selected_year)
+
+    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+
+    pipeline = [
+        {
+            '$match': {
+                'dateReferentiel': {'$regex': regex_date},
+                'concessionPrD': {'$regex': '^C'}
+            }
+        },
+        {
+            '$group': {
+              '_id': "$Gestionnaire",
+                'longueur': {'$sum': '$longueur'},
+            }
+        },
+        {
+            '$addFields': {
+                'longueur_formate': {
+                    '$concat': [
+                        {
+                            '$cond': [
+                                {'$gte': ['$longueur', 1000]},
+                                {'$substr': [{'$toString': {'$divide': ['$longueur', 1000]}}, 0, -1]},  # Ajout de la virgule
+                                {'$concat': ['0.', {'$substr': [{'$toString': '$longueur'}, 0, -3]}]}  # Ajout du "0" avant la virgule si nécessaire
+                            ]
+                        },
+                    ]
+                }
+            }
+        },
+        {
+            '$addFields': {
+                'longueur_formate': {
+                    '$concat': [
+                        {'$substr': ['$longueur_formate', 0, {'$indexOfBytes': ['$longueur_formate', '.']}]}
+                    ]
+                }
+            }
+        }
+    ]
+
+    with collection.aggregate(pipeline) as cursor:
+        data = list(cursor)
+
+    return jsonify(data), 200
+
+@app.route('/api/LongueurRouteGestionnaireNonConcedee', methods=['GET'])
+def autorouteLongueurGestionnaireNonConcedee():
+    selected_year = request.args.get('years', type=str)
+
+    if selected_year is None:
+        return jsonify({'error': 'year pas inclut dans /api/LongueurRouteGestionnaireNonConcedee'}), 400
+
+    print(selected_year)
+
+    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+
+    pipeline = [
+        {
+            '$match': {
+                'dateReferentiel': {'$regex': regex_date},
+                'concessionPrD': {'$regex': '^N'}
+            }
+        },
+        {
+            '$group': {
+              '_id': "$Gestionnaire",
+                'longueur': {'$sum': '$longueur'},
+            }
+        },
+        {
+            '$addFields': {
+                'longueur_formate': {
+                    '$concat': [
+                        {
+                            '$cond': [
+                                {'$gte': ['$longueur', 1000]},
+                                {'$substr': [{'$toString': {'$divide': ['$longueur', 1000]}}, 0, -1]},  # Ajout de la virgule
+                                {'$concat': ['0.', {'$substr': [{'$toString': '$longueur'}, 0, -3]}]}  # Ajout du "0" avant la virgule si nécessaire
+                            ]
+                        },
+                    ]
+                }
+            }
+        },
+        {
+            '$addFields': {
+                'longueur_formate': {
+                    '$concat': [
+                        {'$substr': ['$longueur_formate', 0, {'$indexOfBytes': ['$longueur_formate', '.']}]}
+                    ]
+                }
+            }
+        }
+    ]
+
+    with collection.aggregate(pipeline) as cursor:
+        data = list(cursor)
+
+    return jsonify(data), 200
 
 
 if __name__ == '__main__':

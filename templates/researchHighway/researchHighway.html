@@ -17,11 +17,19 @@
     <style>
         #map { height:  100vh; } /* hauteur carte */
         #map-container { position: relative}
-        #controls { position: absolute; top: 0; right: 0; padding: 10px; background: #fff; z-index: 1000 }
+        #controls { position: absolute; right: 0; padding: 10px; background: #fff; z-index: 1000 }
         select, h1 {font-family: Georgia, serif;}
     </style>
 </head>
 <body>
+<div class="container">
+        <nav class="column">
+            <a class="button" href="/">Accueil</a>
+            <a class="button" href="/RA">Recherche de route</a>
+            <a class="button" href="/nombre-routes-par-gestionnaire">Nombres de routes par gestionnaires</a>
+            <a class="button" href="#Graphique 2">Graphique 2</a>
+        </nav>
+    </div>
     <div id="controls">
         <h1>Recherche d'une autoroute</h1>
         <!-- Liste déroulante des années -->
