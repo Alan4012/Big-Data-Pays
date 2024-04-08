@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Nombre de routes par gestionnaires</title>
+    <title>Représentation graphique du réseau routier national (RRN)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -10,15 +10,15 @@
     <div class="container">
         <nav class="column">
             <a class="button" href="/">Accueil</a>
-            <a class="button" href="/RA">Recherches de routes</a>
-            <a class="button" href="/nombre-routes-par-gestionnaire">Nombre de routes par gestionnaires</a>
+            <a class="button" href="/RA">Recherche de routes</a>
+            <a class="button" href="/nombre-routes-par-gestionnaire">Représentation graphique du réseau routier national (RRN)</a>
             <a class="button" href="#Graphique 2">Graphique 2</a>
         </nav>
     </div>
     <div>
-        <h2 style="padding-top: 5%">Représentation du réseau routier national (RRN)</h2>
+        <h2 style="padding-top: 5%">Représentation graphique du réseau routier national (RRN)</h2>
     </div>
-
+    <!-- Liste déroulante des années -->
     <label for="annees">Sélectionnez une année :</label>
     <select id="annees" name="annees">
         {% for annee in annees %}
@@ -26,6 +26,7 @@
         {% endfor %}
     </select>
 
+    <!-- Liste déroulante des gestionnaires -->
     <label for="concessions">Sélectionnez le type de route :</label>
     <select id="concessions" name="concessions">
         {% for concession in concessions %}
@@ -50,6 +51,7 @@
         var selectedYear = document.getElementById('annees').value;
         var selectedType = document.getElementById('concessions').value;
 
+        //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
         fetch('/api/routeGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
             .then(response => response.json())
             .then(data => {
@@ -59,6 +61,7 @@
                 var ctx;
                 var chart;
 
+                //Boucle conditionnel pour mettre à jour les données du graphique
                 if (chart) {
                     chart.data.labels = gestionnaires;
                     chart.data.datasets[0].data = routes;
@@ -97,7 +100,7 @@
                     });
                 }
             })
-
+        //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
         fetch('/api/longueurGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
             .then(response => response.json())
             .then(data => {
@@ -107,6 +110,7 @@
                 var chart2;
                 var ctx2;
 
+                //Boucle conditionnel pour mettre à jour les données du graphique
                 if (chart2) {
                     chart2.data.labels = concession;
                     chart2.data.datasets[0].data = longueurR;
