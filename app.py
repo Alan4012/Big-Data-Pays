@@ -103,45 +103,51 @@ def researchHighway():
 
     return jsonify(data), 200
 
-
 @app.route('/nombre-routes-par-gestionnaire')
 def graphicsConcession():
     data_dates = collection.distinct("dateReferentiel")
-    seen_year = set()
+    concession = collection.distinct("concessionPrD")
+
+    seen_years = set()
     years = []
 
     for entry in data_dates:
+        # Utiliser une expression régulière pour extraire l'année de manière flexible
         match = re.search(r'\b(\d{4})\b', entry)
-        if match :
+        if match:
             year = match.group(1)
 
-            if year not in seen_year:
+            # Vérifier si l'année a déjà été vue
+            if year not in seen_years:
+                # Ajouter l'année à la liste et à l'ensemble des années déjà vues
                 years.append(year)
-                seen_year.add(year)
+                seen_years.add(year)
 
-    return render_template('graphics/graphics.html', annees=years)
+    return render_template('graphics/graphics.html', annees=years, concessions=concession)
 
-@app.route('/api/routeGestionnaireConcedee', methods=['GET'])
-def autorouteGestionnaireConcedee():
+@app.route('/api/routeGestionnaire', methods=['GET'])
+def researchRoutesConcess():
     selected_year = request.args.get('years', type=str)
+    selected_concession = request.args.get('concessionPrD', type=str)
 
-    if selected_year is None:
-        return jsonify({'error': 'year pas inclut dans /api/routeGestionnaireConcedee'}), 400
+    if selected_year is None or selected_concession is None:
+        return jsonify({'error': 'year/concessionPrD pas inclut dans /api/routeGestionnaire'}), 400
 
-    print(selected_year)
+    print(selected_year, selected_concession)
 
-    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+    regex_year = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+    regex_concession = re.compile(r"\b" + re.escape(selected_concession) + r"\b")
 
     pipeline = [
         {
             '$match': {
-                'dateReferentiel': {'$regex': regex_date},
-                'concessionPrD': {'$regex': '^C'}
+                'dateReferentiel': {'$regex': regex_year},
+                'concessionPrD': {'$regex': regex_concession}
             }
         },
         {
             '$group': {
-              '_id': "$Gestionnaire",
+                '_id': "$Gestionnaire",
                 'count': {'$sum': {'$cond': [["$route", 'null'], 1, 0]}},
             }
         },
@@ -157,63 +163,29 @@ def autorouteGestionnaireConcedee():
 
     return jsonify(data), 200
 
-@app.route('/api/routeGestionnaireNonConcedee', methods=['GET'])
-def autorouteGestionnaireNonConcedee():
+@app.route('/api/longueurGestionnaire', methods=['GET'])
+def get_longueurGestionnaire():
     selected_year = request.args.get('years', type=str)
+    selected_concession = request.args.get('concessionPrD', type=str)
 
-    if selected_year is None:
-        return jsonify({'error': 'year pas inclut dans /api/routeGestionnaireNonConcedee'}), 400
+    if selected_year is None or selected_concession is None:
+        return jsonify({'error': 'year/concessionPrD pas inclut dans /api/routeGestionnaire'}), 400
 
-    print(selected_year)
+    print(selected_year, selected_concession)
 
-    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+    regex_year = re.compile(r"\b" + re.escape(selected_year) + r"\b")
+    regex_concession = re.compile(r"\b" + re.escape(selected_concession) + r"\b")
 
     pipeline = [
         {
             '$match': {
-                'dateReferentiel': {'$regex': regex_date},
-                'concessionPrD': {'$regex': '^N'}
+                'dateReferentiel': {'$regex': regex_year},
+                'concessionPrD': {'$regex': regex_concession}
             }
         },
         {
             '$group': {
-              '_id': "$Gestionnaire",
-                'count': {'$sum': {'$cond': [["$route", 'null'], 1, 0]}},
-            }
-        },
-        {
-            '$match': {
-                'count': {'$gte': 5}
-            }
-        }
-    ]
-
-    with collection.aggregate(pipeline) as cursor:
-        data = list(cursor)
-
-    return jsonify(data), 200
-
-@app.route('/api/LongueurRouteGestionnaireConcedee', methods=['GET'])
-def autorouteLongueurGestionnaireConcedee():
-    selected_year = request.args.get('years', type=str)
-
-    if selected_year is None:
-        return jsonify({'error': 'year pas inclut dans /api/LongueurRouteGestionnaireConcedee'}), 400
-
-    print(selected_year)
-
-    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
-
-    pipeline = [
-        {
-            '$match': {
-                'dateReferentiel': {'$regex': regex_date},
-                'concessionPrD': {'$regex': '^C'}
-            }
-        },
-        {
-            '$group': {
-              '_id': "$Gestionnaire",
+                '_id': "$Gestionnaire",
                 'longueur': {'$sum': '$longueur'},
             }
         },
@@ -224,8 +196,8 @@ def autorouteLongueurGestionnaireConcedee():
                         {
                             '$cond': [
                                 {'$gte': ['$longueur', 1000]},
-                                {'$substr': [{'$toString': {'$divide': ['$longueur', 1000]}}, 0, -1]},  # Ajout de la virgule
-                                {'$concat': ['0.', {'$substr': [{'$toString': '$longueur'}, 0, -3]}]}  # Ajout du "0" avant la virgule si nécessaire
+                                {'$substr': [{'$toString': {'$divide': ['$longueur', 1000]}}, 0, -1]},
+                                {'$concat': ['0.', {'$substr': [{'$toString': '$longueur'}, 0, -3]}]}
                             ]
                         },
                     ]
@@ -247,62 +219,6 @@ def autorouteLongueurGestionnaireConcedee():
         data = list(cursor)
 
     return jsonify(data), 200
-
-@app.route('/api/LongueurRouteGestionnaireNonConcedee', methods=['GET'])
-def autorouteLongueurGestionnaireNonConcedee():
-    selected_year = request.args.get('years', type=str)
-
-    if selected_year is None:
-        return jsonify({'error': 'year pas inclut dans /api/LongueurRouteGestionnaireNonConcedee'}), 400
-
-    print(selected_year)
-
-    regex_date = re.compile(r"\b" + re.escape(selected_year) + r"\b")
-
-    pipeline = [
-        {
-            '$match': {
-                'dateReferentiel': {'$regex': regex_date},
-                'concessionPrD': {'$regex': '^N'}
-            }
-        },
-        {
-            '$group': {
-              '_id': "$Gestionnaire",
-                'longueur': {'$sum': '$longueur'},
-            }
-        },
-        {
-            '$addFields': {
-                'longueur_formate': {
-                    '$concat': [
-                        {
-                            '$cond': [
-                                {'$gte': ['$longueur', 1000]},
-                                {'$substr': [{'$toString': {'$divide': ['$longueur', 1000]}}, 0, -1]},  # Ajout de la virgule
-                                {'$concat': ['0.', {'$substr': [{'$toString': '$longueur'}, 0, -3]}]}  # Ajout du "0" avant la virgule si nécessaire
-                            ]
-                        },
-                    ]
-                }
-            }
-        },
-        {
-            '$addFields': {
-                'longueur_formate': {
-                    '$concat': [
-                        {'$substr': ['$longueur_formate', 0, {'$indexOfBytes': ['$longueur_formate', '.']}]}
-                    ]
-                }
-            }
-        }
-    ]
-
-    with collection.aggregate(pipeline) as cursor:
-        data = list(cursor)
-
-    return jsonify(data), 200
-
 
 if __name__ == '__main__':
     app.run(debug=True)
