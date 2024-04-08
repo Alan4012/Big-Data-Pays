@@ -10,13 +10,13 @@
     <div class="container">
         <nav class="column">
             <a class="button" href="/">Accueil</a>
-            <a class="button" href="/RA">Recherche de route</a>
-            <a class="button" href="/nombre-routes-par-gestionnaire">Nombres de routes par gestionnaires</a>
+            <a class="button" href="/RA">Recherches de routes</a>
+            <a class="button" href="/nombre-routes-par-gestionnaire">Nombre de routes par gestionnaires</a>
             <a class="button" href="#Graphique 2">Graphique 2</a>
         </nav>
     </div>
     <div>
-        <h2>Nombres de routes par gestionnaires</h2>
+        <h2>Nombre de routes par gestionnaires</h2>
     </div>
         <label for="annees">Sélectionnez une année :</label>
         <select id="annees" name="annees">
@@ -25,15 +25,15 @@
             {% endfor %}
         </select>
     <div class="row">
-        <div class="column" id="data-container-concedee" style="width: 40%;"></div>
-        <div class="column" id="data-container-non-concedee" style="width: 40%;"></div>
+        <div class="column" id="data-container-concedee"></div>
+        <div class="column" id="data-container-non-concedee"></div>
     </div>
     <div>
         <h2>Longueurs des routes par gestionnaires</h2>
     </div>
     <div class="row">
-        <div class="column" id="data-container-concede-longueur" style="width: 40%;"></div>
-        <div class="column" id="data-container-non-concede-longueur" style="width: 40%;"></div>
+        <div class="column" id="data-container-concede-longueur"></div>
+        <div class="column" id="data-container-non-concede-longueur"></div>
     </div>
 </body>
 </html>
@@ -162,7 +162,7 @@
                         data: {
                             labels: concession,
                             datasets: [{
-                                label: ' Longueur des routes (en km)',
+                                label: ' Longueurs des routes (en km)',
                                 data: longueurR,
                                 backgroundColor: backgroundColors,
                             }],
@@ -171,7 +171,7 @@
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: "Longueur des routes par gestionnaires concédée par l'état",
+                                    text: "Longueurs des routes par gestionnaires concédée par l'état",
                                     font: {
                                         size: 18
                                     }
@@ -221,7 +221,7 @@
                         data: {
                             labels: concession,
                             datasets: [{
-                                label: ' Longueur des routes (en km)',
+                                label: ' Longueurs des routes (en km)',
                                 data: longueurR,
                                 backgroundColor: backgroundColors2,
                                 fill: true,
@@ -231,7 +231,7 @@
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: "Longueur des routes par gestionnaires non concédée par l'état",
+                                    text: "Longueurs des routes par gestionnaires non concédée par l'état",
                                     font: {
                                         size: 18
                                     }

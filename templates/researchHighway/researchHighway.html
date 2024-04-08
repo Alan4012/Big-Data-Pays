@@ -65,7 +65,7 @@
         document.getElementById('gestionnaires').addEventListener('change', loadData);
 
         function loadData() {
-            // Récupérer les valeurs sélectionnées
+            // Récupérer les valeurs sélectionnées depuis les listes
             var selectedAnnee = document.getElementById('annees').value;
             var selectedGestionnaire = document.getElementById('gestionnaires').value;
 
@@ -85,6 +85,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Recuperation des données crée dans dataRA
                     const latD = data.map(entry => entry['latD']);
                     const lonD = data.map(entry => entry['lonD']);
                     const latF = data.map(entry => entry['latF']);
@@ -93,7 +94,7 @@
                     for(let i = 0 ; i < data.length ; i++){
                         if (!isNaN(latD[i]) && !isNaN(lonD[i]) && !isNaN(latF[i]) && !isNaN(lonF[i])){
 
-                            // Ajout route
+                            // Ajout route en fonction des coordonnées de debut et de fin de route
                             var routeLine = [
                                 new L.LatLng(latD[i], lonD[i]),
                                 new L.LatLng(latF[i], lonF[i])
@@ -104,10 +105,10 @@
                                 lineOptions: { styles: [{ color: "#5202FF", opacity: 2, weight: 3 }] },
                                 createMarker: function(i, waypoint, nb) {
                                     if (i == 0) {
-                                        // This is the first marker, indicating start
+                                        // Premier marker (debut)
                                         myPopup= 'Début autoroute';
                                     } else if (i == nb-1) {
-                                        //This is the last marker indicating destination
+                                        //Deuxieme marker (fin)
                                         myPopup='Fin d autoroute';
                                     }
                                     var marker = L.marker (waypoint.latLng, {
