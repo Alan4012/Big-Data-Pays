@@ -133,8 +133,6 @@ def researchRoutesConcess():
     if selected_year is None or selected_concession is None:
         return jsonify({'error': 'year/concessionPrD pas inclut dans /api/routeGestionnaire'}), 400
 
-    print(selected_year, selected_concession)
-
     regex_year = re.compile(r"\b" + re.escape(selected_year) + r"\b")
     regex_concession = re.compile(r"\b" + re.escape(selected_concession) + r"\b")
 
@@ -170,8 +168,6 @@ def get_longueurGestionnaire():
 
     if selected_year is None or selected_concession is None:
         return jsonify({'error': 'year/concessionPrD pas inclut dans /api/routeGestionnaire'}), 400
-
-    print(selected_year, selected_concession)
 
     regex_year = re.compile(r"\b" + re.escape(selected_year) + r"\b")
     regex_concession = re.compile(r"\b" + re.escape(selected_concession) + r"\b")
