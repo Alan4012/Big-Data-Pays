@@ -54,28 +54,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Flask server.BigDataPays.executor": "Run",
-    "Flask server.Flask (app.py).executor": "Run",
-    "Flask server.Projet.executor": "Run",
-    "Python.app.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "deletionFromPopupRequiresConfirmation": "false",
-    "git-widget-placeholder": "routing-pages",
-    "last_opened_file_path": "C:/Users/clemh/Documents/ESEO/2023-2024/Big Data/tpweb/tpweb",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask server.BigDataPays.executor&quot;: &quot;Run&quot;,
+    &quot;Flask server.Flask (app.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask server.Projet.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;deletionFromPopupRequiresConfirmation&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;routing-pages&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/clemh/Documents/ESEO/2023-2024/Big Data/tpweb/tpweb&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mongo&quot;
+    ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\alan3\PycharmProjects\Big-Data-Pays\templates\assets" />
@@ -140,7 +145,16 @@
       <workItem from="1710517235947" duration="2737000" />
       <workItem from="1710519981922" duration="2343000" />
       <workItem from="1710682864242" duration="174000" />
-      <workItem from="1711609465426" duration="2726000" />
+      <workItem from="1711609465426" duration="5636000" />
+      <workItem from="1711717509844" duration="1400000" />
+      <workItem from="1711984241696" duration="6972000" />
+      <workItem from="1712210861974" duration="5090000" />
+      <workItem from="1712498226884" duration="13676000" />
+      <workItem from="1712563611675" duration="8166000" />
+      <workItem from="1712584776239" duration="2239000" />
+      <workItem from="1712603511572" duration="7407000" />
+      <workItem from="1712656286836" duration="184000" />
+      <workItem from="1712671040519" duration="8497000" />
     </task>
     <servers />
   </component>
@@ -162,6 +176,6 @@
     <SUITE FILE_PATH="coverage/Big_Data_Pays$app.coverage" NAME="app Coverage Results" MODIFIED="1710436724855" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Big_Data_Pays$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1710437926932" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/Big_Data_Pays$BigDataPays.coverage" NAME="BigDataPays Coverage Results" MODIFIED="1710682868250" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Big_Data_Pays$Projet.coverage" NAME="Projet Coverage Results" MODIFIED="1711613520831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Big_Data_Pays$Projet.coverage" NAME="Projet Coverage Results" MODIFIED="1712680099353" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
