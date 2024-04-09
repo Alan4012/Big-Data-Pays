@@ -99,16 +99,24 @@
                                 new L.LatLng(latF[i], lonF[i])
                             ];
 
+                            var startLatLng = L.latLng(latD[i], lonD[i]);
+                            var endLatLng = L.latLng(latF[i], lonF[i]);
+
+                            // Création des liens vers Google Maps pour chaque point
+                            var startGoogleMapsLink = 'https://www.google.com/maps/search/?api=1&query=' + startLatLng.lat + ',' + startLatLng.lng;
+                            var endGoogleMapsLink = 'https://www.google.com/maps/search/?api=1&query=' + endLatLng.lat + ',' + endLatLng.lng;
+
                             var controle = L.Routing.control({
                                 waypoints: routeLine,
                                 lineOptions: { styles: [{ color: "#5202FF", opacity: 2, weight: 3 }] },
                                 createMarker: function(i, waypoint, nb) {
                                     if (i == 0) {
-                                        // This is the first marker, indicating start
-                                        myPopup= 'Début autoroute';
+                                        // marker debut
+                                        myPopup = '<a href="' + startGoogleMapsLink + '" target="_blank">Début autoroute</a>';
+
                                     } else if (i == nb-1) {
-                                        //This is the last marker indicating destination
-                                        myPopup='Fin d autoroute';
+                                        //marker fin
+                                        myPopup= '<a href="' + endGoogleMapsLink + '" target="_blank">Fin autoroute</a>';
                                     }
                                     var marker = L.marker (waypoint.latLng, {
                                             draggable: false
@@ -117,6 +125,7 @@
                                 }
                             }).addTo(map);
 
+                            // suppression du container de Routing.control (trouvé grace à l'inspection de la page web)
                             controle._container.style.display = "None";
 
                         }
