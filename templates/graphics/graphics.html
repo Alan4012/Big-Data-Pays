@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Nombre de routes par gestionnaires</title>
+    <title>Représentation graphique du réseau routier national (RRN)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -10,38 +10,49 @@
     <div class="container">
         <nav class="column">
             <a class="button" href="/">Accueil</a>
-            <a class="button" href="/RA">Recherche de route</a>
-            <a class="button" href="/nombre-routes-par-gestionnaire">Nombres de routes par gestionnaires</a>
+            <a class="button" href="/RA">Recherche de routes</a>
+            <a class="button" href="/nombre-routes-par-gestionnaire">Représentation graphique du réseau routier national (RRN)</a>
             <a class="button" href="#Graphique 2">Graphique 2</a>
         </nav>
     </div>
     <div>
-        <h2>Nombres de routes par gestionnaires</h2>
+        <h2 style="padding-top: 5%">Représentation graphique du réseau routier national (RRN)</h2>
     </div>
-        <label for="annees">Sélectionnez une année :</label>
-        <select id="annees" name="annees">
-            {% for annee in annees %}
-                <option value="{{ annee }}">{{ annee }}</option>
-            {% endfor %}
-        </select>
-    <div class="row">
-        <div class="column" id="data-container-concedee" style="width: 40%;"></div>
-        <div class="column" id="data-container-non-concedee" style="width: 40%;"></div>
-    </div>
+    <!-- Liste déroulante des années -->
+    <label for="annees">Sélectionnez une année :</label>
+    <select id="annees" name="annees">
+        {% for annee in annees %}
+            <option value="{{ annee }}">{{ annee }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Liste déroulante des gestionnaires -->
+    <label for="concessions">Sélectionnez le type de route :</label>
+    <select id="concessions" name="concessions">
+        {% for concession in concessions %}
+            {% if concession == "C" %}
+                <option value="{{ concession }}">Concédée par l'état</option>
+            {% elif concession == "N" %}
+                <option value="{{ concession }}">Non concédée par l'état</option>
+            {% endif %}
+        {% endfor %}
+    </select>
     <div>
-        <h2>Longueurs des routes par gestionnaires</h2>
-    </div>
-    <div class="row">
-        <div class="column" id="data-container-concede-longueur" style="width: 40%;"></div>
-        <div class="column" id="data-container-non-concede-longueur" style="width: 40%;"></div>
+        <div id="data-container" style="padding-left: 10%; padding-right: 10%; padding-bottom: 10%"></div>
+        <div id="data-container-concede-longueur" style="padding-left: 25%; padding-right: 25%"></div>
     </div>
 </body>
 </html>
 <script>
-    document.getElementById('annees').addEventListener('change', function () {
-        var selectedYear = this.value;
+    document.getElementById('annees').addEventListener('change', fetchData);
+    document.getElementById('concessions').addEventListener('change', fetchData);
 
-        fetch('/api/routeGestionnaireConcedee?years=' + selectedYear)
+    function fetchData() {
+        var selectedYear = document.getElementById('annees').value;
+        var selectedType = document.getElementById('concessions').value;
+
+        //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
+        fetch('/api/routeGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
             .then(response => response.json())
             .then(data => {
                 const routes = data.map(entry => entry["count"]);
@@ -50,119 +61,74 @@
                 var ctx;
                 var chart;
 
+                //Boucle conditionnel pour mettre à jour les données du graphique
                 if (chart) {
                     chart.data.labels = gestionnaires;
                     chart.data.datasets[0].data = routes;
                     chart.update();
                 } else {
-                    var dataContainer = document.getElementById('data-container-concedee');
+                    var dataContainer = document.getElementById('data-container');
                     ctx = document.createElement('canvas').getContext('2d');
                     dataContainer.innerHTML = '';
                     dataContainer.appendChild(ctx.canvas);
-
 
                     chart = new Chart(ctx, {
                         type: 'bar',
                         data: {
                             labels: gestionnaires,
                             datasets: [{
-                                label: ' Nombre de routes ',
+                                label: 'Nombre de routes',
                                 data: routes,
                                 borderWidth: 1,
                                 backgroundColor: 'rgb(26,153,252)',
                                 fill: true,
-
                             }],
                         },
                         options: {
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: "Nombre de routes par gestionnaires concédée par l'état",
+                                    text: selectedType === "N"
+                                        ? "Nombre de routes par gestionnaires non concédés"
+                                        : "Nombre de routes par gestionnaires concédés",
                                     font: {
                                         size: 18
                                     }
                                 }
                             }
                         }
-                    })
+                    });
                 }
             })
-
-        fetch('/api/routeGestionnaireNonConcedee?years=' + selectedYear)
-            .then(response => response.json())
-            .then(data => {
-                const routes = data.map(entry => entry["count"]);
-                const gestionnaires = data.map(entry => entry["_id"]);
-
-                var ctx2;
-                var chart2;
-
-                if (chart2) {
-                    chart2.data.labels = gestionnaires;
-                    chart2.data.datasets[0].data = routes;
-                    chart2.update();
-                } else {
-                    var dataContainer = document.getElementById('data-container-non-concedee');
-                    ctx2 = document.createElement('canvas').getContext('2d');
-                    dataContainer.innerHTML = '';
-                    dataContainer.appendChild(ctx2.canvas);
-
-
-                    chart2 = new Chart(ctx2, {
-                        type: 'bar',
-                        data: {
-                            labels: gestionnaires,
-                            datasets: [{
-                                label: ' Nombre de routes',
-                                data: routes,
-                                borderWidth: 1,
-                                backgroundColor: 'rgb(124,0,194)',
-                                fill: true,
-                            }],
-                        },
-                        options: {
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: "Nombre de routes par gestionnaires non concédée par l'état",
-                                    font: {
-                                        size: 18
-                                    }
-                                }
-                            }
-                        }
-                    })
-                }
-            })
-
-        fetch('/api/LongueurRouteGestionnaireConcedee?years=' + selectedYear)
+        //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
+        fetch('/api/longueurGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
             .then(response => response.json())
             .then(data => {
                 const concession = data.map(entry => entry["_id"])
                 const longueurR = data.map(entry => entry["longueur_formate"])
 
-                var chart3;
-                var ctx3;
+                var chart2;
+                var ctx2;
 
-                if (chart3) {
-                    chart3.data.labels = concession;
-                    chart3.data.datasets[0].data = longueurR;
-                    chart3.update();
+                //Boucle conditionnel pour mettre à jour les données du graphique
+                if (chart2) {
+                    chart2.data.labels = concession;
+                    chart2.data.datasets[0].data = longueurR;
+                    chart2.update();
                 } else {
                     var dataContainer = document.getElementById('data-container-concede-longueur');
-                    ctx3 = document.createElement('canvas').getContext('2d');
+                    ctx2 = document.createElement('canvas').getContext('2d');
                     dataContainer.innerHTML = '';
-                    dataContainer.appendChild(ctx3.canvas);
+                    dataContainer.appendChild(ctx2.canvas);
 
                     const backgroundColors = generateColors(concession.length)
 
-                    chart3 = new Chart(ctx3, {
+                    chart2 = new Chart(ctx2, {
                         type: 'doughnut',
                         data: {
                             labels: concession,
                             datasets: [{
-                                label: ' Longueur des routes (en km)',
+                                label: ' Longueurs des routes (en km)',
                                 data: longueurR,
                                 backgroundColor: backgroundColors,
                             }],
@@ -171,74 +137,17 @@
                             plugins: {
                                 title: {
                                     display: true,
-                                    text: "Longueur des routes par gestionnaires concédée par l'état",
+                                    text: selectedType === "N"
+                                        ? "Longueurs des routes par gestionnaires non concédés"
+                                        : "Longueurs des routes par gestionnaires concédés",
                                     font: {
                                         size: 18
                                     }
                                 },
                                 legend: {
                                     display: true,
-                                    position: 'bottom' // Placer la légende en bas du graphique
-                                }
-                            }
-                        }
-                    })
-                }
-            })
-
-        function generateColors(numColors) {
-            const colors = [];
-            for (let i = 0; i < numColors; i++) {
-                const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
-                colors.push(color);
-            }
-            return colors;
-        }
-
-        fetch('/api/LongueurRouteGestionnaireNonConcedee?years=' + selectedYear)
-            .then(response => response.json())
-            .then(data => {
-                const concession = data.map(entry => entry["_id"])
-                const longueurR = data.map(entry => entry["longueur_formate"])
-
-                var chart4;
-                var ctx4;
-
-                if (chart4) {
-                    chart4.data.labels = concession;
-                    chart4.data.datasets[0].data = longueurR;
-                    chart4.update();
-                } else {
-                    var dataContainer = document.getElementById('data-container-non-concede-longueur');
-                    ctx4 = document.createElement('canvas').getContext('2d');
-                    dataContainer.innerHTML = '';
-                    dataContainer.appendChild(ctx4.canvas);
-
-                    const backgroundColors2 = generateColors2(concession.length)
-
-                    chart4 = new Chart(ctx4, {
-                        type: 'doughnut',
-                        data: {
-                            labels: concession,
-                            datasets: [{
-                                label: ' Longueur des routes (en km)',
-                                data: longueurR,
-                                backgroundColor: backgroundColors2,
-                                fill: true,
-                            }],
-                        },
-                        options: {
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: "Longueur des routes par gestionnaires non concédée par l'état",
-                                    font: {
-                                        size: 18
-                                    }
-                                },
-                                legend: {
-                                    display: true,
-                                    position: 'bottom' // Placer la légende en bas du graphique
+                                    position: 'right',
+                                    fullSize: false
                                 }
                             }
                         }
@@ -247,7 +156,7 @@
             })
             .catch(error => console.error('Error:', error));
 
-            function generateColors2(numColors) {
+            function generateColors(numColors) {
                 const colors = [];
                 for (let i = 0; i < numColors; i++) {
                     const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
@@ -255,5 +164,5 @@
                 }
                 return colors;
             }
-    });
+    }
 </script>

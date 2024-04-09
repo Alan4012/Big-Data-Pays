@@ -26,7 +26,7 @@
         <nav class="column">
             <a class="button" href="/">Accueil</a>
             <a class="button" href="/RA">Recherche de route</a>
-            <a class="button" href="/nombre-routes-par-gestionnaire">Nombres de routes par gestionnaires</a>
+            <a class="button" href="/nombre-routes-par-gestionnaire">Représentation graphique du réseau routier national (RRN)</a>
             <a class="button" href="#Graphique 2">Graphique 2</a>
         </nav>
     </div>
@@ -65,7 +65,7 @@
         document.getElementById('gestionnaires').addEventListener('change', loadData);
 
         function loadData() {
-            // Récupérer les valeurs sélectionnées
+            // Récupérer les valeurs sélectionnées depuis les listes
             var selectedAnnee = document.getElementById('annees').value;
             var selectedGestionnaire = document.getElementById('gestionnaires').value;
 
@@ -85,6 +85,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Recuperation des données crée dans dataRA
                     const latD = data.map(entry => entry['latD']);
                     const lonD = data.map(entry => entry['lonD']);
                     const latF = data.map(entry => entry['latF']);
@@ -93,7 +94,7 @@
                     for(let i = 0 ; i < data.length ; i++){
                         if (!isNaN(latD[i]) && !isNaN(lonD[i]) && !isNaN(latF[i]) && !isNaN(lonF[i])){
 
-                            // Ajout route
+                            // Ajout route en fonction des coordonnées de debut et de fin de route
                             var routeLine = [
                                 new L.LatLng(latD[i], lonD[i]),
                                 new L.LatLng(latF[i], lonF[i])
@@ -117,6 +118,7 @@
                                     } else if (i == nb-1) {
                                         //marker fin
                                         myPopup= '<a href="' + endGoogleMapsLink + '" target="_blank">Fin autoroute</a>';
+
                                     }
                                     var marker = L.marker (waypoint.latLng, {
                                             draggable: false
