@@ -256,8 +256,7 @@ def longueur_route(type, year):
         match_filter = {
             "dateReferentiel": {'$regex': strYear},
             "$or": [
-                {"route": {"$regex": "^N"}},
-                {"route": {"$regex": "^\d{3}N"}}
+                {"route": {"$regex": "^N"}}
             ],
             "cote": {"$ne": "G"}
         }
