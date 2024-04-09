@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Graphique en bar du réseau routier national (RRN)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="column">
+            <a class="button" href="/">Accueil</a>
+            <a class="button" href="/RA">Recherche de routes</a>
+            <a class="button" href="/graphique-camenbert-par-gestionnaire">Graphique en donut</a>
+            <a class="button" href="/graphique-bar-par-gestionnaire">Graphique en bar</a>
+            <a class="button" href="#Graphique 2">Graphique 2</a>
+        </nav>
+    </div>
+    <div>
+        <h2 style="padding-top: 5%">Graphique en bar du réseau routier national (RRN)</h2>
+    </div>
+    <!-- Liste déroulante des années -->
+    <label for="annees">Sélectionnez une année :</label>
+    <select id="annees" name="annees">
+        {% for annee in annees %}
+            <option value="{{ annee }}">{{ annee }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Liste déroulante des gestionnaires -->
+    <label for="concessions">Sélectionnez le type de route :</label>
+    <select id="concessions" name="concessions">
+        {% for concession in concessions %}
+            {% if concession == "C" %}
+                <option value="{{ concession }}">Concédée par l'état</option>
+            {% elif concession == "N" %}
+                <option value="{{ concession }}">Non concédée par l'état</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <div>
+        <div id="data-container" style="padding-left: 10%; padding-right: 10%;"></div>
+    </div>
+</body>
+</html>
+<script>
+    document.getElementById('annees').addEventListener('change', fetchData);
+    document.getElementById('concessions').addEventListener('change', fetchData);
+
+    function fetchData() {
+        var selectedYear = document.getElementById('annees').value;
+        var selectedType = document.getElementById('concessions').value;
+
+        //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
+        fetch('/api/routeGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
+            .then(response => response.json())
+            .then(data => {
+                const routes = data.map(entry => entry["count"]);
+                const gestionnaires = data.map(entry => entry["_id"]);
+
+                var ctx;
+                var chart;
+
+                //Boucle conditionnel pour mettre à jour les données du graphique
+                if (chart) {
+                    chart.data.labels = gestionnaires;
+                    chart.data.datasets[0].data = routes;
+                    chart.update();
+                } else {
+                    var dataContainer = document.getElementById('data-container');
+                    ctx = document.createElement('canvas').getContext('2d');
+                    dataContainer.innerHTML = '';
+                    dataContainer.appendChild(ctx.canvas);
+
+                    chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: gestionnaires,
+                            datasets: [{
+                                label: 'Nombre de routes',
+                                data: routes,
+                                borderWidth: 1,
+                                backgroundColor: 'rgb(26,153,252)',
+                                fill: true,
+                            }],
+                        },
+                        options: {
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: selectedType === "N"
+                                        ? "Nombre de routes par gestionnaires non concédés"
+                                        : "Nombre de routes par gestionnaires concédés",
+                                    font: {
+                                        size: 18
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+    }
+</script>

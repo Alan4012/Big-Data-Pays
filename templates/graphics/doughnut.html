@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Représentation graphique du réseau routier national (RRN)</title>
+    <title>Graphique en donut du réseau routier national (RRN)</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,12 +11,13 @@
         <nav class="column">
             <a class="button" href="/">Accueil</a>
             <a class="button" href="/RA">Recherche de routes</a>
-            <a class="button" href="/representation-graphique-par-gestionnaire">Représentation graphique du réseau routier national (RRN)</a>
+            <a class="button" href="/graphique-camenbert-par-gestionnaire">Graphique en donut</a>
+            <a class="button" href="/graphique-bar-par-gestionnaire">Graphique en bar</a>
             <a class="button" href="#Graphique 2">Graphique 2</a>
         </nav>
     </div>
     <div>
-        <h2 style="padding-top: 5%">Représentation graphique du réseau routier national (RRN)</h2>
+        <h2 style="padding-top: 5%">Graphique en donut du réseau routier national (RRN)</h2>
     </div>
     <!-- Liste déroulante des années -->
     <label for="annees">Sélectionnez une année :</label>
@@ -38,8 +39,7 @@
         {% endfor %}
     </select>
     <div>
-        <div id="data-container" style="padding-left: 10%; padding-right: 10%; padding-bottom: 10%"></div>
-        <div id="data-container-concede-longueur" style="padding-left: 25%; padding-right: 25%"></div>
+        <div id="data-container-concede-longueur" style="padding-left: 30%; padding-right: 30%;"></div>
     </div>
 </body>
 </html>
@@ -51,55 +51,6 @@
         var selectedYear = document.getElementById('annees').value;
         var selectedType = document.getElementById('concessions').value;
 
-        //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
-        fetch('/api/routeGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
-            .then(response => response.json())
-            .then(data => {
-                const routes = data.map(entry => entry["count"]);
-                const gestionnaires = data.map(entry => entry["_id"]);
-
-                var ctx;
-                var chart;
-
-                //Boucle conditionnel pour mettre à jour les données du graphique
-                if (chart) {
-                    chart.data.labels = gestionnaires;
-                    chart.data.datasets[0].data = routes;
-                    chart.update();
-                } else {
-                    var dataContainer = document.getElementById('data-container');
-                    ctx = document.createElement('canvas').getContext('2d');
-                    dataContainer.innerHTML = '';
-                    dataContainer.appendChild(ctx.canvas);
-
-                    chart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: gestionnaires,
-                            datasets: [{
-                                label: 'Nombre de routes',
-                                data: routes,
-                                borderWidth: 1,
-                                backgroundColor: 'rgb(26,153,252)',
-                                fill: true,
-                            }],
-                        },
-                        options: {
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: selectedType === "N"
-                                        ? "Nombre de routes par gestionnaires non concédés"
-                                        : "Nombre de routes par gestionnaires concédés",
-                                    font: {
-                                        size: 18
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            })
         //Envoi une requete AJAX à l'API pour récupérer les données de l'année et la concession
         fetch('/api/longueurGestionnaire?years=' + selectedYear + '&concessionPrD=' + selectedType)
             .then(response => response.json())
@@ -149,20 +100,20 @@
                                     position: 'right',
                                     fullSize: false
                                 }
-                            }
+                            },
                         }
                     })
                 }
             })
             .catch(error => console.error('Error:', error));
 
-            function generateColors(numColors) {
-                const colors = [];
-                for (let i = 0; i < numColors; i++) {
-                    const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
-                    colors.push(color);
-                }
-                return colors;
+        function generateColors(numColors) {
+            const colors = [];
+            for (let i = 0; i < numColors; i++) {
+                const color = `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`;
+                colors.push(color);
             }
+            return colors;
+        }
     }
 </script>

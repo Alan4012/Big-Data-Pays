@@ -103,7 +103,8 @@ def researchHighway():
 
     return jsonify(data), 200
 
-@app.route('/representation-graphique-par-gestionnaire')
+
+@app.route('/graphique-bar-par-gestionnaire')
 def graphicsConcession():
     data_dates = collection.distinct("dateReferentiel")
     concession = collection.distinct("concessionPrD")
@@ -123,7 +124,29 @@ def graphicsConcession():
                 years.append(year)
                 seen_years.add(year)
 
-    return render_template('graphics/graphics.html', annees=years, concessions=concession)
+    return render_template('graphics/barGraph.html', annees=years, concessions=concession)
+
+@app.route('/graphique-camenbert-par-gestionnaire')
+def graphicsCamenbert():
+    data_dates = collection.distinct("dateReferentiel")
+    concession = collection.distinct("concessionPrD")
+
+    seen_years = set()
+    years = []
+
+    for entry in data_dates:
+        # Utiliser une expression régulière pour extraire l'année de manière flexible
+        match = re.search(r'\b(\d{4})\b', entry)
+        if match:
+            year = match.group(1)
+
+            # Vérifier si l'année a déjà été vue
+            if year not in seen_years:
+                # Ajouter l'année à la liste et à l'ensemble des années déjà vues
+                years.append(year)
+                seen_years.add(year)
+
+    return render_template('graphics/doughnut.html', annees=years, concessions=concession)
 
 @app.route('/api/routeGestionnaire', methods=['GET'])
 def researchRoutesConcess():
@@ -183,6 +206,11 @@ def get_longueurGestionnaire():
             '$group': {
                 '_id': "$Gestionnaire",
                 'longueur': {'$sum': '$longueur'},
+            }
+        },
+        {
+            '$match': {
+                'longueur': {'$gte': 70000}  # Filtrer les routes de plus de 70 km (70,000 mètres)
             }
         },
         {
