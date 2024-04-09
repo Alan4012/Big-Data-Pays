@@ -103,7 +103,7 @@ def researchHighway():
 
     return jsonify(data), 200
 
-@app.route('/nombre-routes-par-gestionnaire')
+@app.route('/representation-graphique-par-gestionnaire')
 def graphicsConcession():
     data_dates = collection.distinct("dateReferentiel")
     concession = collection.distinct("concessionPrD")
