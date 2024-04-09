@@ -1,10 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Concessionnaires Autoroutes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="container">
+        <nav class="column">
+            <a class="button" href="/">Accueil</a>
+            <a class="button" href="/recherche-de-pays">Recherche de pays</a>
+            <a class="button" href="/graphique">Graphique 1</a>
+            <a class="button" href="/highway">Concessions autoroutes</a>
+            <a class="button" href="#Graphique 2">Graphique 2</a>
+        </nav>
+    </div>
+    <div>
+        <h1>Concessions autoroutes</h1>
+        <select id="select-annee">
+            <option value="2014">2014</option>
+            <option value="2015">2015</option>
+            <option value="2016">2016</option>
+            <option value="2017">2017</option>
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+        </select>
+        <select id="type-route">
+            <option value="nationale">Nationales</option>
+            <option value="autoroute">Autoroutes</option>
+        </select>
+        <button id="filter-button">Filtrer</button>
+        <canvas id="highwayChart" width="400" height="200"></canvas>
+        <canvas id="concessionaireChart" width="100" height="50"></canvas>
+    </div>
+    <script>
+    function getRouteName(routeName) {
+        if(routeName) {
+            const firstLetter = routeName.substring(0, 1);
+            let realName = firstLetter;
 
+            if(firstLetter === 'A' || firstLetter === 'N') {
+                for (let i = 1 ; i < routeName.length ; i++) {
+                    let char = routeName.substring(i, 1);
+                    if (char !== '0') {
+                        realName += routeName.substring(i);
+                        break;
+                    }
+                }
+            }
+
+            return realName;
+        }
+        return '';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let highwayChart = null;
+        let concessionaireChart = null;
+
+        const updateChart = (highwayData) => {
+            highwayChart.data.labels = highwayData.labels;
+            highwayChart.data.datasets[0].data = highwayData.data;
+            highwayChart.update();
+        };
+
+        document.getElementById('filter-button').addEventListener('click', function() {
+
+            // Récupère les données filtrées
+            fetch(`/api/highway/${document.getElementById('type-route').value}/${document.getElementById('select-annee').value}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur de réseau - ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const routes = data.map(item => item["_id"]["route"])
+                    const metres = data.map(item => item["metres"])
+
+                    // Initialise les graphes s'ils n'ont pas déjà été créés
+                    if (!highwayChart) {
+                        highwayChart = new Chart(document.getElementById('highwayChart').getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: routes,
+                                datasets: [{
+                                    label: 'Longueur en m',
+                                    data: metres,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            }
+                        });
+                    }
+
+                    // Met à jour les graphiques
+                    updateChart({
+                        labels: routes,
+                        data: metres
+                    });
+                })
+                .catch(error => {
+                    // Gestion de l'erreur - Affiche une popup avec le message d'erreur
+                    alert(`Une erreur s'est produite: ${error.message}`);
+                });
+        });
+
+        document.getElementById('highwayChart').addEventListener('click', function (event) {
+            const bounds = event.target.getBoundingClientRect();
+            const graphBoundsLeft = bounds.left + 58;
+            const graphBoundsRight = bounds.right - 9;
+            const mouseX = event.clientX - graphBoundsLeft;
+            const graphWidth = graphBoundsRight - graphBoundsLeft;
+            const barWidth = graphWidth / highwayChart.data.labels.length;
+            const clickedIndex = Math.floor(mouseX / barWidth);
+
+            if(clickedIndex >= 0 && clickedIndex < highwayChart.data.labels.length) {
+                const routeClicked = highwayChart.data.labels[clickedIndex];
+                fetch(`/api/concessionaire/${document.getElementById('select-annee').value}/${routeClicked}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erreur de réseau - ${response.status} ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const labels = data.map(item => item["_id"]["concessionaire"]);
+                        const dataValues = data.map(item => item["metres"]);
+
+                        if(!concessionaireChart) {
+                            concessionaireChart = new Chart(document.getElementById('concessionaireChart').getContext('2d'), {
+                                type: 'pie',
+                                data: {
+                                    labels: [],
+                                    datasets: [{
+                                        label: 'Concessionnaires',
+                                        data: [],
+                                        backgroundColor: [
+                                            'rgba(255, 99, 132, 0.2)',
+                                            'rgba(54, 162, 235, 0.2)',
+                                            'rgba(255, 206, 86, 0.2)',
+                                            'rgba(75, 192, 192, 0.2)',
+                                            'rgba(153, 102, 255, 0.2)',
+                                            'rgba(255, 159, 64, 0.2)'
+                                        ],
+                                        borderColor: [
+                                            'rgba(255, 99, 132, 1)',
+                                            'rgba(54, 162, 235, 1)',
+                                            'rgba(255, 206, 86, 1)',
+                                            'rgba(75, 192, 192, 1)',
+                                            'rgba(153, 102, 255, 1)',
+                                            'rgba(255, 159, 64, 1)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        title: {
+                                            display: true,
+                                            text: routeClicked,
+                                            font: {
+                                                size: 24,
+                                                style: 'bold'
+                                            }
+                                        }
+                                    },
+                                    aspectRatio: 3
+                                }
+                            });
+                        }
+                        // Met à jour les graphiques
+                        concessionaireChart.data.labels = labels;
+                        concessionaireChart.data.datasets[0].data = dataValues;
+                        concessionaireChart.options.plugins.title.text = routeClicked;
+                        concessionaireChart.update();
+                    })
+                    .catch(error => {
+                        // Gestion de l'erreur - Affiche une popup avec le message d'erreur
+                        alert(`Une erreur s'est produite: ${error.message}`);
+                    });
+            }
+        });
+    });
+    </script>
 </body>
 </html>
