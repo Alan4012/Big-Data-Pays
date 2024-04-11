@@ -248,76 +248,90 @@ def get_longueurGestionnaire():
 
 @app.route('/highway')
 def highwayConcessionaire():
-    return render_template('highway/highway.html')
+    data_dates = collection.distinct("dateReferentiel")
 
+    seen_years = set()
+    years = []
+
+    for entry in data_dates:
+        # Utiliser une expression régulière pour extraire l'année de manière flexible
+        match = re.search(r'\b(\d{4})\b', entry)
+        if match:
+            year = match.group(1)
+
+            # Vérifier si l'année a déjà été vue
+            if year not in seen_years:
+                # Ajouter l'année à la liste et à l'ensemble des années déjà vues
+                years.append(year)
+                seen_years.add(year)
+
+    return render_template('highway/highway.html', annees=years)
+
+# Définition d'une route pour récupérer les longueurs des autoroutes en fonction du type et de l'année
 @app.route('/api/highway/<type>/<year>')
 def longueur_route(type, year):
-    strYear = str(year)
+    strYear = str(year)  # Convertit l'année en chaîne de caractères
+
+    # Vérifie le type d'autoroute (nationale ou autre)
     if type == 'nationale':
-
+        # Filtre pour les autoroutes nationales
         match_filter = {
-            "dateReferentiel": {'$regex': strYear},
-            "$or": [
-                {"route": {"$regex": "^N"}}
-            ],
-            "cote": {"$ne": "G"}
+            "dateReferentiel": {'$regex': strYear},  # Filtre par année
+            "route": {"$regex": "^N"},  # Filtre pour les routes commençant par N
+            "cote": {"$ne": "G"}  # Exclut les valeurs avec "cote" égal à G
         }
-
-        pipeline = [
-            {"$match": match_filter},
-            {"$group": {
-                "_id": {
-                    "route": "$route"
-                },
-                "metres": {"$sum": "$longueur"}
-            }}
-        ]
-
     else:
+        # Filtre pour les autres types d'autoroutes (non-nationales)
         match_filter = {
-            "dateReferentiel": {'$regex': strYear},
-            "$or": [
-                {"route": {"$regex": "^A"}}
-            ],
-            "cote": {"$ne": "G"}
+            "dateReferentiel": {'$regex': strYear},  # Filtre par année
+            "route": {"$regex": "^A"},  # Filtre pour les routes commençant par A
+            "cote": {"$ne": "G"}  # Exclut les valeurs avec "cote" égal à G
         }
 
-        pipeline = [
-            {"$match": match_filter},
-            {"$group": {
-                "_id": {
-                    "route": "$route"
-                },
-                "metres": {"$sum": "$longueur"}
-            }}
-        ]
-
-    result = list(collection.aggregate(pipeline))
-
-    return jsonify(result)
-
-@app.route('/api/concessionaire/<year>/<route>')
-def concessionaire(year, route):
-    strYear = str(year)
-
-    match_filter = {
-        "dateReferentiel": {'$regex': strYear},
-        "route": route,
-        "cote": {"$ne": "G"}
-    }
-
+    # Pipeline d'agrégation MongoDB pour calculer les longueurs des autoroutes
     pipeline = [
-        {"$match": match_filter},
+        {"$match": match_filter},  # Filtrage des données
         {"$group": {
             "_id": {
-                "concessionaire": "$Gestionnaire"
+                "route": "$route"  # Groupe par route
             },
-            "metres": {"$sum": "$longueur"}
+            "metres": {"$sum": "$longueur"}  # Calcule la somme des longueurs
         }}
     ]
 
+    # Exécute la requête avec le pipeline défini
     result = list(collection.aggregate(pipeline))
 
+    # Renvoie les résultats au format JSON
+    return jsonify(result)
+
+# Définition d'une route pour récupérer les concessionnaires d'une autoroute pour une année donnée
+@app.route('/api/concessionaire/<year>/<route>')
+def concessionaire(year, route):
+    strYear = str(year)  # Convertit l'année en chaîne de caractères
+
+    # Filtre pour récupérer les données des concessionnaires d'une route pour une année spécifique
+    match_filter = {
+        "dateReferentiel": {'$regex': strYear},  # Filtre par année
+        "route": route,  # Filtre par route spécifique
+        "cote": {"$ne": "G"}  # Exclut les valeurs avec "cote" égal à G
+    }
+
+    # Pipeline d'agrégation MongoDB pour calculer les longueurs des autoroutes
+    pipeline = [
+        {"$match": match_filter},  # Filtrage des données
+        {"$group": {
+            "_id": {
+                "concessionaire": "$Gestionnaire"  # Groupe par concessionnaire
+            },
+            "metres": {"$sum": "$longueur"}  # Calcule la somme des longueurs
+        }}
+    ]
+
+    # Exécute la requête avec le pipeline défini
+    result = list(collection.aggregate(pipeline))
+
+    # Renvoie les résultats au format JSON
     return jsonify(result)
 
 if __name__ == '__main__':

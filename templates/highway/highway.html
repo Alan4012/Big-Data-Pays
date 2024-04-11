@@ -2,11 +2,13 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Concessionnaires Autoroutes</title>
+    <title>Longueur des routes</title>
+    <!-- Importation de Milligram et Chart.JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <!-- Affichage des boutons de navigation -->
     <div class="container">
         <nav class="column">
             <a class="button" href="/">Accueil</a>
@@ -18,56 +20,38 @@
     </div>
     <div>
         <h1>Longueur des routes</h1>
-        <select id="select-annee">
-            <option value="2014">2014</option>
-            <option value="2015">2015</option>
-            <option value="2016">2016</option>
-            <option value="2017">2017</option>
-            <option value="2018">2018</option>
-            <option value="2019">2019</option>
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
-            <option value="2023">2023</option>
+        <!-- Sélecteur pour les années -->
+        <select id="select-annee" name="annees">
+            {% for annee in annees %}
+                <option value="{{ annee }}">{{ annee }}</option>
+            {% endfor %}
         </select>
+        <!-- Sélecteur pour choisir le type de route -->
         <select id="type-route">
             <option value="nationale">Nationales</option>
             <option value="autoroute">Autoroutes</option>
         </select>
+        <!-- Bouton pour actualiser le graphique -->
         <button id="filter-button">Filtrer</button>
+        <!-- Canvas où chart.JS va "dessiner" les graphiques -->
         <canvas id="highwayChart" width="400" height="200"></canvas>
         <canvas id="concessionaireChart" width="100" height="50"></canvas>
     </div>
     <script>
-    function getRouteName(routeName) {
-        if(routeName) {
-            const firstLetter = routeName.substring(0, 1);
-            let realName = firstLetter;
 
-            if(firstLetter === 'A' || firstLetter === 'N') {
-                for (let i = 1 ; i < routeName.length ; i++) {
-                    let char = routeName.substring(i, 1);
-                    if (char !== '0') {
-                        realName += routeName.substring(i);
-                        break;
-                    }
-                }
-            }
-
-            return realName;
-        }
-        return '';
-    }
-
+    // Fonction s'activant uniquement si le contenu de la page est chargé
     document.addEventListener('DOMContentLoaded', function() {
         let highwayChart = null;
         let concessionaireChart = null;
 
+        // Fonction pour mettre à jour les données et les labels du graphique highwayChart
         const updateChart = (highwayData) => {
             highwayChart.data.labels = highwayData.labels;
             highwayChart.data.datasets[0].data = highwayData.data;
             highwayChart.update();
         };
+
+        // Si le graphique highwayChart n'est pas défini, on affiche un graphique vide
         if (!highwayChart) {
             highwayChart = new Chart(document.getElementById('highwayChart').getContext('2d'), {
                 type: 'bar',
@@ -77,13 +61,14 @@
                         label: 'Longueur (en km)',
                         data: [],
                         backgroundColor: 'rgba(155, 77, 202, 1)',
-                        borderColor: 'rgba(155, 77, 202, 1)',
+                        borderColor: 'rgba(155, 77, 202, 1)', // On ajoute une couleur de bordure pour avoir des barres plus épaisses
                         borderWidth: 1
                     }]
                 }
             });
         }
 
+        // Si le bouton permettant d'actualiser le graphique est cliqué, on déclenche la fonction
         document.getElementById('filter-button').addEventListener('click', function() {
 
             // Récupère les données filtrées
@@ -91,19 +76,19 @@
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Erreur de réseau - ${response.status} ${response.statusText}`);
+                        //Renvoie une erreur si la requête n'a pas de réponse correcte
                     }
                     return response.json();
+                    // Renvoie le fichier JSON de la réponse
                 })
                 .then(data => {
+                    // Récupère les information du fichier JSON et convertit les mètres en kilomètres
                     const routes = data.map(item => item["_id"]["route"])
                     const metres = data.map(item => item["metres"])
 
                     let kilometres = metres.map(item => item/1000);
 
-                    // Initialise les graphes s'ils n'ont pas déjà été créés
-
-
-                    // Met à jour les graphiques
+                    // Met à jour le graphique
                     updateChart({
                         labels: routes,
                         data: kilometres
@@ -115,17 +100,29 @@
                 });
         });
 
+        // Fonction qui s'active uniquement si l'on clique sur le graphique highwayChart
         document.getElementById('highwayChart').addEventListener('click', function (event) {
+            // Récupère les bordures du graphique
             const bounds = event.target.getBoundingClientRect();
+            // Calcul du bord gauche du graphique (graphique uniquement)
+            // à partir de la valeur de la bordure gauche (graphique + axe des ordonnées)
             const graphBoundsLeft = bounds.left + 35;
+            // On fait la même chose pour la bordure droite
             const graphBoundsRight = bounds.right - 9;
+            // On calcule les coordonnées X dans le graphique du point cliqué
             const mouseX = event.clientX - graphBoundsLeft;
+            // On calcule la largeur réelle du graphique
             const graphWidth = graphBoundsRight - graphBoundsLeft;
+            // Calcul de largeur d'une barre
             const barWidth = graphWidth / highwayChart.data.labels.length;
+            // Calcul de l'index de la barre cliquée
             const clickedIndex = Math.floor(mouseX / barWidth);
 
+            // On vérifie que l'index est compris entre les bornes du tableau labels
             if(clickedIndex >= 0 && clickedIndex < highwayChart.data.labels.length) {
+                // On récupère la route cliquée
                 const routeClicked = highwayChart.data.labels[clickedIndex];
+                // On récupère les informations avec une requête API pour faire le graphique donut
                 fetch(`/api/concessionaire/${document.getElementById('select-annee').value}/${routeClicked}`)
                     .then(response => {
                         if (!response.ok) {
@@ -172,17 +169,22 @@
                             });
                         }
 
+                        // Conversion des mètres en kilomètres
                         let kilometresConcessionaires = dataValues.map(item => item / 1000);
+
+                        // Calcul du nombre de kilomètres total de la route
                         let kilometresTotal = 0;
                         for (let i = 0 ; i < kilometresConcessionaires.length ; i++) {
                             kilometresTotal += kilometresConcessionaires[i];
                         }
+
+                        //Calcul du pourcentage pour chaque concessionnaire
                         let pourcentage = kilometresConcessionaires.map( value => Math.round((value / kilometresTotal) * 10000) /100);
                         let labelPourcentage = [];
                         for (let i = 0 ; i < labels.length ; i++){
                             labelPourcentage[i] = labels[i] + " - " + pourcentage[i] + "%";
                         }
-                        // Met à jour les graphiques
+                        // Met à jour le graphique
                         concessionaireChart.data.labels = labelPourcentage;
                         concessionaireChart.data.datasets[0].data = kilometresConcessionaires;
                         concessionaireChart.options.plugins.title.text = routeClicked;
