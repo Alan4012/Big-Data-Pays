@@ -46,16 +46,18 @@ def indexHighway():
     return render_template('researchHighway/researchHighway.html', annees=years, gestionnaires=gestionnaires)
 
 
-@app.route('/dataRA', methods=['GET'])
+@app.route('/api/dataRA', methods=['GET'])
 def researchHighway():
     selected_date = request.args.get('year', type=str)
     selected_gestionnaire = request.args.get('gestionnaire', type=str)
 
+    # verifie si la data selection existe
     if selected_date is None or selected_gestionnaire is None:
         return jsonify({'error': 'year/gestionnaire pas inclut dans /dataRA'}), 400
 
-    print(selected_date, selected_gestionnaire)
+    # print(selected_date, selected_gestionnaire) -> sert pour la verification
 
+    # permet de comparer des chaines de caractère ici : l'année avec une date (str) complète
     regex_date = re.compile(r"\b" + re.escape(selected_date) + r"\b")
     regex_gestionnaire = re.compile(r"\b" + re.escape(selected_gestionnaire) + r"\b")
 
@@ -98,7 +100,7 @@ def researchHighway():
             entry['latD'], entry['lonD'] = lambert93_to_latlng(float(xD), float(yD))
             entry['latF'], entry['lonF'] = lambert93_to_latlng(float(xF), float(yF))
         else:
-            # Si l'une des coordonnées est manquante, ignorer cette entrée ou gérer l'erreur selon vos besoins
+            # Si l'une des coordonnées est manquante, ignorer cette entrée
             print("Coordonnées manquantes pour une entrée")
 
     return jsonify(data), 200

@@ -78,7 +78,7 @@
             });
 
             // Envoi d'une requête AJAX pour récupérer les données pour l'année et le gestionnaire sélectionnés
-            fetch('/dataRA?year=' + selectedAnnee + '&gestionnaire=' + selectedGestionnaire)
+            fetch('/api/dataRA?year=' + selectedAnnee + '&gestionnaire=' + selectedGestionnaire)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur de réponse du serveur');
@@ -110,7 +110,7 @@
 
                             var controle = L.Routing.control({
                                 waypoints: routeLine,
-                                lineOptions: { styles: [{ color: "#5202FF", opacity: 2, weight: 3 }] },
+                                lineOptions: { styles: [{ color: "#7238ee", opacity: 2, weight: 3 }] },
                                 createMarker: function(i, waypoint, nb) {
                                     if (i == 0) {
                                         // marker debut
